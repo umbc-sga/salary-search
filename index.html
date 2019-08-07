@@ -1,0 +1,43 @@
+<html>
+    <head>
+        <title>Salary Search</title>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="style.css">
+    </head>
+
+    <body>
+        <div class="container">
+            <h1 class="text-center">UMBC Salary Search</h1>
+            <small id="loadingIndicator">Loading data...</small><br>
+
+            <input id="search" type="search" placeholder="Search" autocomplete="off">
+
+            <ul id="results" class="mt-3 mb-3 list-group"></ul>
+        </div>
+
+        <footer class="footer">
+            <div class="container-fluid">
+                <span class="text-muted">
+                    Data from <a target="_blank" href="https://www.baltimoresun.com/data/bal-public-salaries-archive-20150415-htmlstory.html">The Baltimore Sun Public Salaries Archive (2018)</a>.
+                </span>
+                <span class="text-muted">
+                    Inspired by <a target="_blank" href="https://salaryguide.dbknews.com/">the UMDCP Diamondback Salary Guide</a>.
+                </span>
+            </div>
+        </footer>
+
+        <!-- Bootstrap Script Imports -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+        <!-- CSV Parser Import-->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/4.6.2/papaparse.min.js"></script>
+
+        <!-- Salary Search Script Import -->
+        <script src="app.js"></script>
+    </body>
+</html>
