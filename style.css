@@ -10,13 +10,12 @@ html {
     outline: none;
     border-bottom: 1px solid black;
     font-size: 3em;
-    width: 75%;
+    width: 100%;
 }
 
 :root {
     --footer-height: 60px;
 }
-
 
 body { margin-bottom: var(--footer-height); }
 

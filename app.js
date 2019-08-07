@@ -11,6 +11,8 @@ let data;
  * Whenever the document loads, the code inside the function will be executed.
  */
 $(document).ready(function() {
+    let loadingIndicator = document.getElementById("loadingIndicator");
+
     // Request the data from the server
     $.ajax({
         type: "GET",
@@ -18,7 +20,6 @@ $(document).ready(function() {
         dataType: "text",
         success: function(res) {
             // Show data loaded text then hide it after 1 second
-            let loadingIndicator = document.getElementById("loadingIndicator");
             loadingIndicator.innerHTML = "Data loaded!";
             setTimeout(function() {
                 loadingIndicator.style.display = "none";
@@ -27,6 +28,11 @@ $(document).ready(function() {
             // Convert the CSV data into JSON format
             data = Papa.parse(res);
             data = data.data;
+        },
+        error: function (xhr, ajaxOptions, thrownError) {
+            loadingIndicator.innerHTML = "Data load failed!";
+
+            console.error(thrownError);
         }
     });
 
@@ -35,17 +41,26 @@ $(document).ready(function() {
      */
     let timeout = 0;
     $("#search").on("input", function() {
+        // Clear the previous waiting
         clearTimeout(timeout);
 
+        // Get the text that was inputted into the search bar
         let query = $(this).val();
 
+        // Wait 300ms before doing anything
         timeout = setTimeout(function() {
-            search(query);
-        }, 500);
+            // If there is something in the search bar, search
+            if (query)
+                search(query);
+            // If the user cleared out the search bar, clear the results
+            else
+                document.getElementById("results").innerHTML = "";
+        }, 300);
     });
 });
 
 /**
+ * Proper captilization for names.
  * 
  * @param {string} name 
  */
@@ -54,7 +69,9 @@ function nameCapitalize(name) {
 }
 
 /**
+ * Add commas for thousands.
  * https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
+ * 
  * @param {integer} amount 
  */
 function addCommas(amount) {
@@ -112,7 +129,7 @@ function search(query) {
         // Add the person's name to the list item
         el.innerHTML += "<h4>" + name + "<h4>";
 
-        // const ANNUAL_SALARY = 9, REGULAR_EARNINGS = 11, OVERTIME_EARNINGS = 12, OTHER_EARNINGS = 13, YTD_GROSS_EARNINGS = 14;
+        // Add salary data
         el.innerHTML += "<p class='mb-0'>Annual Salary: $" + addCommas(result[ANNUAL_SALARY]) + "</p>";
         el.innerHTML += "<p class='mb-0'>Regular Earnings: $" + addCommas(result[REGULAR_EARNINGS]) + "</p>";
         el.innerHTML += "<p class='mb-0'>Overtime Earnings: $" + addCommas(result[OVERTIME_EARNINGS]) + "</p>";
