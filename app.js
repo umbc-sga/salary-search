@@ -104,6 +104,19 @@ function search(query) {
     let resultsDisplay = document.getElementById("results");
     resultsDisplay.innerHTML = "";
 
+    // Show No Results Found text if no results found
+    if (results.length === 0) {
+        // Create a list item
+        let el = document.createElement("LI");
+        el.className = "list-group-item";
+
+        // Show No Results Found text
+        el.innerHTML = "<h4 class='mb-0'>No Results Found</h4>";
+
+        // Add the result list item to the results display
+        resultsDisplay.appendChild(el);
+    }
+
     // Go through every single result
     for (let result of results) {
         // Create a list item
