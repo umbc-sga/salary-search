@@ -152,8 +152,7 @@ function search(query) {
         // Request from UMBC Directory Search
         $.ajax({
             type: "GET",
-            // url: "https://cors-anywhere.herokuapp.com/https://www.umbc.edu/search/directory/?search=" + searchTerm,
-            url: "https://www.umbc.edu/search/directory/?search=" + searchTerm,
+            url: "https://cors-anywhere.herokuapp.com/https://www.umbc.edu/search/directory/?search=" + searchTerm,
             success: function(res) {
                 // Create mock HTML
                 let html = document.createElement("html");
