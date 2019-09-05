@@ -140,14 +140,55 @@ function search(query) {
             name += result[SUFFIX]
 
         // Add the person's name to the list item
-        el.innerHTML += "<h4>" + name + "<h4>";
+        el.innerHTML += "<h4>" + name + "</h4>";
+
+        // Add title and department placeholders
+        el.innerHTML += "<p class=\"mb-0\">{{title}}</p>";
+        el.innerHTML += "<p class=\"mb-0\">{{department}}</p>";
+
+        // Convert name to search term for UMBC Directory
+        let searchTerm = name.split(" ").join("+");
+
+        // Request from UMBC Directory Search
+        $.ajax({
+            type: "GET",
+            // url: "https://cors-anywhere.herokuapp.com/https://www.umbc.edu/search/directory/?search=" + searchTerm,
+            url: "https://www.umbc.edu/search/directory/?search=" + searchTerm,
+            success: function(res) {
+                // Create mock HTML
+                let html = document.createElement("html");
+                html.innerHTML = res;
+
+                // Get title if the directory has it
+                let titleRaw = html.getElementsByClassName("title");
+                if (titleRaw.length)
+                    el.innerHTML = el.innerHTML.replace("{{title}}", titleRaw[0].innerHTML.trim());
+                else
+                    el.innerHTML = el.innerHTML.replace("<p class=\"mb-0\">{{title}}</p>", "");
+
+                // Get department if the directory has it
+                let departmentRaw = html.getElementsByClassName("department");
+                if (departmentRaw.length)
+                    el.innerHTML = el.innerHTML.replace("{{department}}", departmentRaw[0].innerHTML.trim());
+                else
+                    el.innerHTML = el.innerHTML.replace("<p class=\"mb-0\">{{department}}</p>", "");
+
+                // Remove mock HTML
+                html.remove();
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                loadingIndicator.innerHTML = "Data load failed!";
+
+                console.error(thrownError);
+            }
+        });
 
         // Add salary data
-        el.innerHTML += "<p class='mb-0'>Annual Salary: $" + addCommas(result[ANNUAL_SALARY]) + "</p>";
-        el.innerHTML += "<p class='mb-0'>Regular Earnings: $" + addCommas(result[REGULAR_EARNINGS]) + "</p>";
-        el.innerHTML += "<p class='mb-0'>Overtime Earnings: $" + addCommas(result[OVERTIME_EARNINGS]) + "</p>";
-        el.innerHTML += "<p class='mb-0'>Other Earnings: $" + addCommas(result[OTHER_EARNINGS]) + "</p>";
-        el.innerHTML += "<p class='mb-0'>YTD Gross Earnings: $" + addCommas(result[YTD_GROSS_EARNINGS]) + "</p>";
+        el.innerHTML += "<p class='mb-0'><b>YTD Gross Earnings:</b> $" + addCommas(result[YTD_GROSS_EARNINGS]) + "</p>";
+        el.innerHTML += "<p class='mb-0'><b>Regular Earnings:</b> $" + addCommas(result[REGULAR_EARNINGS]) + "</p>";
+        el.innerHTML += "<p class='mb-0'><b>Annual Salary:</b> $" + addCommas(result[ANNUAL_SALARY]) + "</p>";
+        el.innerHTML += "<p class='mb-0'><b>Overtime Earnings:</b> $" + addCommas(result[OVERTIME_EARNINGS]) + "</p>";
+        el.innerHTML += "<p class='mb-0'><b>Other Earnings:</b> $" + addCommas(result[OTHER_EARNINGS]) + "</p>";
 
         // Add the result list item to the results display
         resultsDisplay.appendChild(el);
