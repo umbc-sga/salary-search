@@ -4,13 +4,17 @@ html {
 }
 
 #search, #search:focus {
-    border-width:0px;
-    border:none;
+    border-width: 0px;
+    border: none;
     box-shadow: none;
     outline: none;
     border-bottom: 1px solid black;
     font-size: 3em;
     width: 100%;
+}
+
+#options {
+    font-size: 3em;
 }
 
 :root {
