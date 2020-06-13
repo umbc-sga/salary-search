@@ -18,7 +18,9 @@ fetchAll([
     "2019_data.csv",
     "2018_data.csv",
     "2017_data.csv",
-    "2016_data.csv"
+    "2016_data.csv",
+    "2014_data.csv",
+    "2013_data.csv"
 ])
 .then(() => {
     // show data loaded text then hide it after 1 second
@@ -30,6 +32,9 @@ fetchAll([
         for (let entry of yearlyData) {
             // Get the person's first and last name
             let name = getName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
+
+            if (year == 2013)
+                console.log(name)
 
             // if the name has not been seen yet in other years
             if (!(name in people)) {
@@ -286,14 +291,21 @@ function showResults(results) {
                 headerRow.appendChild(th);
             });
 
-            // TODO abstract row creation to a function?
+            let ytd, reg, annual, overtime, other;
+
+            annual = entry[ANNUAL_SALARY];
+            ytd = entry[YTD_GROSS_EARNINGS];
+            reg = entry[REGULAR_EARNINGS];
+            overtime = entry[OVERTIME_EARNINGS];
+            other = entry[OTHER_EARNINGS];
+
             const dataRow = document.createElement("tr");
             [
-                "$" + addCommas(entry[YTD_GROSS_EARNINGS]),
-                "$" + addCommas(entry[REGULAR_EARNINGS]),
-                "$" + addCommas(entry[ANNUAL_SALARY]),
-                "$" + addCommas(entry[OVERTIME_EARNINGS]),
-                "$" + addCommas(entry[OTHER_EARNINGS])
+                "$" + addCommas(ytd),
+                "$" + addCommas(reg),
+                "$" + addCommas(annual),
+                "$" + addCommas(overtime),
+                "$" + addCommas(other)
             ]
             .forEach(x => {
                 const td = document.createElement("td");
@@ -327,14 +339,14 @@ function clearResults() {
  * @returns {String} name
  */
 function getName(first, middle, last) {
-    let name = nameCapitalize(first);
+    let name = nameCapitalize(first.trim());
 
-    if (middle && middle != "NA")
-        name += " " + middle.toUpperCase() + ". ";
+    if (middle && middle.trim() !== "" && middle != "NA")
+        name += " " + middle.toUpperCase().trim() + ". ";
     else
         name += " ";
     
-    name += nameCapitalize(last);
+    name += nameCapitalize(last.trim());
 
     return name;
 }
@@ -416,7 +428,7 @@ function fetchAll(urls) {
  * @returns {String} capitalizedName
  */
 function nameCapitalize(name) {
-    return name.substring(0, 1) + name.substring(1).toLowerCase();
+    return name.charAt(0).toUpperCase() + name.substring(1).toLowerCase();
 }
 
 /**
