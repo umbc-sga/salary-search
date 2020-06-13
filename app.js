@@ -86,7 +86,7 @@ $(document).ready(function() {
             // If there is something in the search bar, search
             if (query) {
                 search(query);
-                document.getElementById("page").style.display = "none";
+                // document.getElementById("page").style.display = "none";
             }
             // If the user cleared out the search bar, clear the results
             else {
@@ -128,7 +128,41 @@ function search(query) {
     }
 
     clearResults();
-    showResults(results);
+
+    if (results.length !== 0) {
+        let slicedResults = {};
+
+        for (let [key, value] of Object.entries(results).slice(0, PAGE_SIZE)) {
+            slicedResults[key] = value;
+        }
+
+        showResults(slicedResults);
+    }
+    else {
+        showResults(results);
+    }
+
+    // setup pagination
+    $("#page").pagination({
+        items: Object.keys(results).length,
+        prevText: '<span aria-hidden="true">&laquo;</span>',
+        nextText: '<span aria-hidden="true">&raquo;</span>',
+        itemsOnPage: 10,
+        onPageClick: function(page, event) {
+            event.preventDefault();
+
+            clearResults();
+
+            let pageNum = page - 1;
+
+            let slicedResults = {};
+            for (let [key, value] of Object.entries(results).slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE)) {
+                slicedResults[key] = value;
+            }
+
+            showResults(slicedResults);
+        }
+    });
 }
 
 /**
@@ -159,7 +193,7 @@ function showExplore() {
         prevText: '<span aria-hidden="true">&laquo;</span>',
         nextText: '<span aria-hidden="true">&raquo;</span>',
         itemsOnPage: 10,
-        onPageClick: function (page, event) {
+        onPageClick: function(page, event) {
             event.preventDefault();
 
             clearResults();
