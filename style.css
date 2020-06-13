@@ -34,6 +34,10 @@ td:first-child, th:first-child {
     margin-bottom: 0;
 }
 
+#page {
+    overflow-x: scroll;
+}
+
 .prev, .ellipse, .current {
     position: relative;
     display: block;

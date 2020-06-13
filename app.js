@@ -17,7 +17,8 @@ let directorySearches = [];
 fetchAll([
     "2019_data.csv",
     "2018_data.csv",
-    "2017_data.csv"
+    "2017_data.csv",
+    "2016_data.csv"
 ])
 .then(() => {
     // show data loaded text then hide it after 1 second
@@ -25,37 +26,20 @@ fetchAll([
     loadingIndicator.innerHTML = "Data loaded!";
     setTimeout(() => loadingIndicator.style.display = "none", 1000);
 
-    // for (let [year, yearlyData] of Object.entries(salaryData)) {
-    //     for (let entry of yearlyData) {
-    //         // Get the person's first and last name
-    //         let name = getName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
+    for (let [year, yearlyData] of Object.entries(salaryData)) {
+        for (let entry of yearlyData) {
+            // Get the person's first and last name
+            let name = getName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
 
-    //         // if the name has not been seen yet in other years
-    //         if (!(name in people)) {
-    //             people[name] = {};
-    //         }
+            // if the name has not been seen yet in other years
+            if (!(name in people)) {
+                people[name] = {};
+            }
 
-    //         // save the person's yearly salary data
-    //         people[name][year] = entry;
-    //         people[name].name = name;
-    //     }
-    // }
-
-    // const currentYear = Object.keys(salaryData).reduce((a, b) => Math.max(a, b));
-    // let foo = Object.values(people).sort((a, b) => {
-    //     if (currentYear in a || currentYear in b) {
-    //         if (!(currentYear in a))
-    //             return -1;
-    //         else if (!(currentYear in b))
-    //             return 1;
-    //         else
-    //             return  b[currentYear][YTD_GROSS_EARNINGS] - a[currentYear][YTD_GROSS_EARNINGS];
-    //     }
-        
-    //     return 0;
-    // });
-
-    // console.log(foo);
+            // save the person's yearly salary data
+            people[name][year] = entry;
+        }
+    }
 
     // show the salary explore page
     showExplore();
@@ -153,10 +137,8 @@ function search(query) {
 
             clearResults();
 
-            let pageNum = page - 1;
-
             let slicedResults = {};
-            for (let [key, value] of Object.entries(results).slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE)) {
+            for (let [key, value] of Object.entries(results).slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)) {
                 slicedResults[key] = value;
             }
 
@@ -172,24 +154,24 @@ function showExplore() {
     // show the pagination
     document.getElementById("page").style.display = "";
 
+    // show "Explore Salary Data" text
     let resultsDisplay = document.getElementById("results");
-    resultsDisplay.innerHTML = "<h4 class='mt-3'>Explore Salary Data</h4>";
+    resultsDisplay.innerHTML = "<h4 class='mt-3'>Explore Salary Data (From High to Low)</h4>";
 
-    const currentYear = Object.keys(salaryData).reduce((a, b) => Math.max(a, b));
-    const data = salaryData[currentYear].sort((a, b) => b[YTD_GROSS_EARNINGS] - a[YTD_GROSS_EARNINGS]);
+    // sort salary data of people
+    const data = Object.values(people).sort((a, b) => {
+        let aLatest = Object.keys(a).reduce((a, b) => Math.max(a, b));
+        let bLatest = Object.keys(b).reduce((a, b) => Math.max(a, b));
+        
+        return b[bLatest][YTD_GROSS_EARNINGS] - a[aLatest][YTD_GROSS_EARNINGS];
+    });
 
     // show first page of results
-    showResults(data.slice(0, PAGE_SIZE).map(x => {
-        const a = {};
-        
-        a[currentYear] = x;
-
-        return a;
-    }));
+    showResults(data.slice(0, PAGE_SIZE));
 
     // setup pagination
     $("#page").pagination({
-        items: salaryData[currentYear].length,
+        items: data.length,
         prevText: '<span aria-hidden="true">&laquo;</span>',
         nextText: '<span aria-hidden="true">&raquo;</span>',
         itemsOnPage: 10,
@@ -198,14 +180,7 @@ function showExplore() {
 
             clearResults();
 
-            let pageNum = page - 1;
-            showResults(data.slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE).map(x => {
-                const a = {};
-
-                a[currentYear] = x;
-
-                return a;
-            }));
+            showResults(data.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE));
         }
     });
 }
