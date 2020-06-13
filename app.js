@@ -154,11 +154,12 @@ function showExplore() {
     }));
 
     // setup pagination
-    $("#page").twbsPagination({
-        totalPages: Math.ceil(data.length / PAGE_SIZE),
-        currentPage: 1,
-        visiblePages: 7,
-        onPageClick: function (event, page) {
+    $("#page").pagination({
+        items: salaryData[currentYear].length,
+        prevText: '<span aria-hidden="true">&laquo;</span>',
+        nextText: '<span aria-hidden="true">&raquo;</span>',
+        itemsOnPage: 10,
+        onPageClick: function (page, event) {
             event.preventDefault();
 
             clearResults();

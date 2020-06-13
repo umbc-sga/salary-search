@@ -34,6 +34,23 @@ td:first-child, th:first-child {
     margin-bottom: 0;
 }
 
+.prev, .ellipse, .current {
+    position: relative;
+    display: block;
+    padding: .5rem .75rem;
+    margin-left: -1px;
+    line-height: 1.25;
+    color: #007bff;
+    background-color: #fff;
+    border: 1px solid #dee2e6;
+}
+
+li.active > .current {
+    color: white;
+    background-color: #337ab7;
+    border-color: #337ab7;
+}
+
 .yearLabel {
     margin-top: 5px;
     margin-bottom: 0;
