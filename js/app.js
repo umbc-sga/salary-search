@@ -10,7 +10,7 @@ const PAGE_SIZE = 10;
 let salaryData = {};
 let people = {};
 
-const dataYears = [2013, 2014, 2016, 2017, 2018, 2019];
+const dataYears = [2013, 2014, 2015, 2016, 2017, 2018, 2019];
 
 /**
  * Run this when the file is first loaded.
@@ -250,10 +250,17 @@ function showResults(results) {
             ]
             const headerRow = createRow(headerValues, "th");
 
+            let reg;
+
+            if (year == 2015)
+                reg = entry[REGULAR_EARNINGS - 1];
+            else
+                reg = entry[REGULAR_EARNINGS];
+
             const dataValues = [
                 "$" + Number(entry[ANNUAL_SALARY]).toLocaleString(),
                 "$" + Number(entry[YTD_GROSS_EARNINGS]).toLocaleString(),
-                "$" + Number(entry[REGULAR_EARNINGS]).toLocaleString(),
+                "$" + Number(reg).toLocaleString(),
                 "$" + Number(entry[OVERTIME_EARNINGS]).toLocaleString(),
                 "$" + Number(entry[OTHER_EARNINGS]).toLocaleString()
             ];
