@@ -7,34 +7,39 @@ const ANNUAL_SALARY = 9, REGULAR_EARNINGS = 11, OVERTIME_EARNINGS = 12, OTHER_EA
 const DELAY = 100;
 const PAGE_SIZE = 10;
 
-// Salary data
 let salaryData = {};
 let people = {};
 
-let pageNum = 0;
-let directorySearches = [];
+const dataYears = [2013, 2014, 2016, 2017, 2018, 2019];
 
-fetchAll([
-    "2019_data.csv",
-    "2018_data.csv",
-    "2017_data.csv",
-    "2016_data.csv",
-    "2014_data.csv",
-    "2013_data.csv"
-])
-.then(() => {
-    // show data loaded text then hide it after 1 second
-    let loadingIndicator = document.getElementById("loadingIndicator");
-    loadingIndicator.innerHTML = "Data loaded!";
-    setTimeout(() => loadingIndicator.style.display = "none", 1000);
+/**
+ * Run this when the file is first loaded.
+ */
+(function onLoad() {
+    fetchAll(dataYears.map(year => `data/${year}_data.csv`))
+    .then(() => {
+        processSalaryData();
+        initUI();
+    });
+})();
 
+/**
+ * Initialize the UI components.
+ */
+function initUI() {
+    showDataIsLoaded();
+    showExplorePage();
+    bindSearchHandler();
+}
+
+/**
+ * Group salary years of the same people together.
+ */
+function processSalaryData() {
     for (let [year, yearlyData] of Object.entries(salaryData)) {
         for (let entry of yearlyData) {
-            // Get the person's first and last name
-            let name = getName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
-
-            if (year == 2013)
-                console.log(name)
+            // get the person's first and last name
+            let name = getNormalizedName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
 
             // if the name has not been seen yet in other years
             if (!(name in people)) {
@@ -45,50 +50,10 @@ fetchAll([
             people[name][year] = entry;
         }
     }
-
-    // show the salary explore page
-    showExplore();
-});
-
-/**
- * Whenever the document loads, the code inside the function will be executed.
- */
-$(document).ready(function() {
-    /**
-     * Bind the search box to automatically search
-     */
-    let timeout = 0;
-    $("#search").on("input", function() {
-        // Clear the previous waiting
-        clearTimeout(timeout);
-
-        // Clear directory search timeouts
-        if (directorySearches.length)
-            for (let foo of directorySearches)
-                clearTimeout(foo);
-
-        // Get the text that was inputted into the search bar
-        let query = $(this).val();
-
-        // Wait 300ms before doing anything
-        timeout = setTimeout(() => {
-            // If there is something in the search bar, search
-            if (query) {
-                search(query);
-                // document.getElementById("page").style.display = "none";
-            }
-            // If the user cleared out the search bar, clear the results
-            else {
-                document.getElementById("results").innerHTML = "";
-                showExplore();
-            }
-        }, 300);
-    });
-});
+}
 
 /**
  * Search the salary data for a user's query.
- * 
  * @param {string} query the user's search keyword
  */
 function search(query) {
@@ -97,7 +62,7 @@ function search(query) {
     for (let [year, yearlyData] of Object.entries(salaryData)) {
         for (let entry of yearlyData) {
             // Get the person's first and last name
-            let name = entry[FIRST_NAME] + " " + entry[LAST_NAME];
+            let name = getNormalizedName(entry[FIRST_NAME], "", entry[LAST_NAME]);
 
             // Convert the employee name and query to lowercase to be case insensitive
             name = name.toLowerCase();
@@ -155,7 +120,7 @@ function search(query) {
 /**
  * Show the Salary Explore page.
  */
-function showExplore() {
+function showExplorePage() {
     // show the pagination
     document.getElementById("page").style.display = "";
 
@@ -226,7 +191,7 @@ function showResults(results) {
             // only show a person's details once
             if (!showedPersonalDetails) {
                 // Get the person's first name
-                let name = nameCapitalize(entry[FIRST_NAME]);
+                let name = getProperCapitalization(entry[FIRST_NAME]);
 
                 // Get the person's middle initial (if any)
                 if (entry[MIDDLE_INITIAL] && entry[MIDDLE_INITIAL] != "NA")
@@ -235,7 +200,7 @@ function showResults(results) {
                     name += " ";
 
                 // Get the person's last name
-                name += nameCapitalize(entry[LAST_NAME]);
+                name += getProperCapitalization(entry[LAST_NAME]);
 
                 // Get the person's suffix (if any)
                 if (entry[SUFFIX] && entry[SUFFIX] != "NA") {
@@ -276,43 +241,23 @@ function showResults(results) {
             const table = document.createElement("table");
 
             // create row for table headers
-            const headerRow = document.createElement("tr");
-            [
+            const headerValues = [
                 "YTD Gross Earnings",
                 "Regular Earnings",
                 "Annual Salary",
                 "Overtime Earnings",
                 "Other Earnings"
             ]
-            .forEach(x => {
-                const th = document.createElement("th");
-                th.innerHTML = x;
+            const headerRow = createRow(headerValues, "th");
 
-                headerRow.appendChild(th);
-            });
-
-            let ytd, reg, annual, overtime, other;
-
-            annual = entry[ANNUAL_SALARY];
-            ytd = entry[YTD_GROSS_EARNINGS];
-            reg = entry[REGULAR_EARNINGS];
-            overtime = entry[OVERTIME_EARNINGS];
-            other = entry[OTHER_EARNINGS];
-
-            const dataRow = document.createElement("tr");
-            [
-                "$" + addCommas(ytd),
-                "$" + addCommas(reg),
-                "$" + addCommas(annual),
-                "$" + addCommas(overtime),
-                "$" + addCommas(other)
-            ]
-            .forEach(x => {
-                const td = document.createElement("td");
-                td.innerHTML = x;
-
-                dataRow.appendChild(td);
-            });
+            const dataValues = [
+                "$" + Number(entry[ANNUAL_SALARY]).toLocaleString(),
+                "$" + Number(entry[YTD_GROSS_EARNINGS]).toLocaleString(),
+                "$" + Number(entry[REGULAR_EARNINGS]).toLocaleString(),
+                "$" + Number(entry[OVERTIME_EARNINGS]).toLocaleString(),
+                "$" + Number(entry[OTHER_EARNINGS]).toLocaleString()
+            ];
+            const dataRow = createRow(dataValues, "td");
 
             table.appendChild(headerRow);
             table.appendChild(dataRow);
@@ -325,30 +270,29 @@ function showResults(results) {
 }
 
 /**
+ * Create a HTML table row from the data in the specified cell type.
+ * @param {Array} data 
+ * @param {String} cellType
+ * @returns {HTMLTableRowElement} row
+ */
+function createRow(data, cellType) {
+    const row = document.createElement("tr");
+
+    data.forEach(x => {
+        const cell = document.createElement(cellType);
+        cell.innerHTML = x;
+
+        row.appendChild(cell);
+    });
+
+    return row;
+}
+
+/**
  * Clear the results view.
  */
 function clearResults() {
     document.getElementById("results").innerHTML = "";
-}
-
-/**
- * Get the formatted name.
- * @param {String} first 
- * @param {String} middle 
- * @param {String} last 
- * @returns {String} name
- */
-function getName(first, middle, last) {
-    let name = nameCapitalize(first.trim());
-
-    if (middle && middle.trim() !== "" && middle != "NA")
-        name += " " + middle.toUpperCase().trim() + ". ";
-    else
-        name += " ";
-    
-    name += nameCapitalize(last.trim());
-
-    return name;
 }
 
 /**
@@ -400,6 +344,50 @@ function searchDirectory(searchTerm, el) {
 }
 
 /**
+ * Bind the search handler function to the search element.
+ */
+function bindSearchHandler() {
+    document.getElementById("search").addEventListener("input", searchHander);
+}
+
+/**
+ * Handle the real-time search display when typing, with 300ms latency for typing.
+ */
+let timeout, directorySearches = [];
+function searchHander() {
+    // clear the previous waiting
+    clearTimeout(timeout);
+
+    // clear directory search timeouts
+    // if (directorySearches.length)
+    //     for (let foo of directorySearches)
+    //         clearTimeout(foo);
+
+    let query = document.getElementById("search").value;
+
+    // wait 300ms before doing anything
+    timeout = setTimeout(() => {
+        // if there is something in the search bar, search
+        if (query) {
+            search(query);
+        }
+        // if the user cleared out the search bar, show the explore page
+        else {
+            showExplorePage();
+        }
+    }, 300);
+}
+
+/**
+ * Show data loaded text then hide it after one second.
+ */
+function showDataIsLoaded() {
+    let loadingIndicator = document.getElementById("loadingIndicator");
+    loadingIndicator.innerHTML = "Data loaded!";
+    setTimeout(() => loadingIndicator.style.display = "none", 1000);
+}
+
+/**
  * Fetch a list of URLs.
  * @param {String[]} urls 
  * @returns {Promise}
@@ -412,7 +400,7 @@ function fetchAll(urls) {
             fetch(url)
             .then(res => res.text())
             .then(csv => {
-                const year = url.split("_")[0];
+                const year = url.replace("data/", "").split("_")[0];
 
                 salaryData[year] = Papa.parse(csv).data;
             })
@@ -423,19 +411,30 @@ function fetchAll(urls) {
 }
 
 /**
+ * Get the normalized name: trim, proper capital, period after middle initial.
+ * @param {String} first 
+ * @param {String} middle 
+ * @param {String} last 
+ * @returns {String} name
+ */
+function getNormalizedName(first, middle, last) {
+    let name = getProperCapitalization(first.trim());
+
+    if (middle && middle.trim() !== "" && middle != "NA")
+        name += " " + middle.toUpperCase().trim() + ". ";
+    else
+        name += " ";
+    
+    name += getProperCapitalization(last.trim());
+
+    return name;
+}
+
+/**
  * Proper capitalization for names.
  * @param {string} name 
  * @returns {String} capitalizedName
  */
-function nameCapitalize(name) {
+function getProperCapitalization(name) {
     return name.charAt(0).toUpperCase() + name.substring(1).toLowerCase();
-}
-
-/**
- * Add commas for thousands.
- * https://stackoverflow.com/questions/2901102/how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
- * @param {Number} amount 
- */
-function addCommas(amount) {
-    return amount.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");;
 }
