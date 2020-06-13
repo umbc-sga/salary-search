@@ -9,6 +9,7 @@ const PAGE_SIZE = 10;
 
 // Salary data
 let salaryData = {};
+let people = {};
 
 let pageNum = 0;
 let directorySearches = [];
@@ -24,9 +25,40 @@ fetchAll([
     loadingIndicator.innerHTML = "Data loaded!";
     setTimeout(() => loadingIndicator.style.display = "none", 1000);
 
+    // for (let [year, yearlyData] of Object.entries(salaryData)) {
+    //     for (let entry of yearlyData) {
+    //         // Get the person's first and last name
+    //         let name = getName(entry[FIRST_NAME], entry[MIDDLE_INITIAL], entry[LAST_NAME]);
+
+    //         // if the name has not been seen yet in other years
+    //         if (!(name in people)) {
+    //             people[name] = {};
+    //         }
+
+    //         // save the person's yearly salary data
+    //         people[name][year] = entry;
+    //         people[name].name = name;
+    //     }
+    // }
+
+    // const currentYear = Object.keys(salaryData).reduce((a, b) => Math.max(a, b));
+    // let foo = Object.values(people).sort((a, b) => {
+    //     if (currentYear in a || currentYear in b) {
+    //         if (!(currentYear in a))
+    //             return -1;
+    //         else if (!(currentYear in b))
+    //             return 1;
+    //         else
+    //             return  b[currentYear][YTD_GROSS_EARNINGS] - a[currentYear][YTD_GROSS_EARNINGS];
+    //     }
+        
+    //     return 0;
+    // });
+
+    // console.log(foo);
+
     // show the salary explore page
-    // showExplore();
-    search("Hrabowski");
+    showExplore();
 });
 
 /**
@@ -59,7 +91,7 @@ $(document).ready(function() {
             // If the user cleared out the search bar, clear the results
             else {
                 document.getElementById("results").innerHTML = "";
-                // showExplore();
+                showExplore();
             }
         }, 300);
     });
@@ -106,38 +138,41 @@ function showExplore() {
     // show the pagination
     document.getElementById("page").style.display = "";
 
-    // sort data in descending order
-    data = data.sort((a, b) => {
-        return b[YTD_GROSS_EARNINGS] - a[YTD_GROSS_EARNINGS];
-    });
-
-    // Clear previous results from results display (if any)
     let resultsDisplay = document.getElementById("results");
     resultsDisplay.innerHTML = "<h4 class='mt-3'>Explore Salary Data</h4>";
 
+    const currentYear = Object.keys(salaryData).reduce((a, b) => Math.max(a, b));
+    const data = salaryData[currentYear].sort((a, b) => b[YTD_GROSS_EARNINGS] - a[YTD_GROSS_EARNINGS]);
+
     // show first page of results
-    showResults(data.slice(0, PAGE_SIZE));
+    showResults(data.slice(0, PAGE_SIZE).map(x => {
+        const a = {};
         
+        a[currentYear] = x;
+
+        return a;
+    }));
+
     // setup pagination
-    $('#page').twbsPagination({
+    $("#page").twbsPagination({
         totalPages: Math.ceil(data.length / PAGE_SIZE),
         currentPage: 1,
         visiblePages: 7,
         onPageClick: function (event, page) {
             event.preventDefault();
 
+            clearResults();
+
             let pageNum = page - 1;
-            showResults(data.slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE));
+            showResults(data.slice(pageNum * PAGE_SIZE, (pageNum + 1) * PAGE_SIZE).map(x => {
+                const a = {};
+
+                a[currentYear] = x;
+
+                return a;
+            }));
         }
     });
-}
-
-/**
- * Clear the results view.
- */
-function clearResults() {
-    let resultsDisplay = document.getElementById("results");
-    resultsDisplay.innerHTML = "";
 }
 
 /**
@@ -241,7 +276,7 @@ function showResults(results) {
                 headerRow.appendChild(th);
             });
 
-            // TODO abstract row creation
+            // TODO abstract row creation to a function?
             const dataRow = document.createElement("tr");
             [
                 "$" + addCommas(entry[YTD_GROSS_EARNINGS]),
@@ -265,6 +300,33 @@ function showResults(results) {
 
         resultsDisplay.appendChild(el);
     });
+}
+
+/**
+ * Clear the results view.
+ */
+function clearResults() {
+    document.getElementById("results").innerHTML = "";
+}
+
+/**
+ * Get the formatted name.
+ * @param {String} first 
+ * @param {String} middle 
+ * @param {String} last 
+ * @returns {String} name
+ */
+function getName(first, middle, last) {
+    let name = nameCapitalize(first);
+
+    if (middle && middle != "NA")
+        name += " " + middle.toUpperCase() + ". ";
+    else
+        name += " ";
+    
+    name += nameCapitalize(last);
+
+    return name;
 }
 
 /**
@@ -318,6 +380,7 @@ function searchDirectory(searchTerm, el) {
 /**
  * Fetch a list of URLs.
  * @param {String[]} urls 
+ * @returns {Promise}
  */
 function fetchAll(urls) {
     let requests = [];
@@ -340,6 +403,7 @@ function fetchAll(urls) {
 /**
  * Proper capitalization for names.
  * @param {string} name 
+ * @returns {String} capitalizedName
  */
 function nameCapitalize(name) {
     return name.substring(0, 1) + name.substring(1).toLowerCase();

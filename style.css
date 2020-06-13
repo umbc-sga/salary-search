@@ -27,6 +27,11 @@ td:first-child, th:first-child {
 
 .list-group-item {
     overflow-x: scroll;
+    margin-bottom: 5px;
+}
+
+.list-group-item h4 {
+    margin-bottom: 0;
 }
 
 .yearLabel {
